@@ -1,0 +1,73 @@
+-- Migration SQL for Follow-up Agent V1
+
+CREATE TYPE source_type_enum AS ENUM ('email', 'meeting', 'task', 'manual');
+CREATE TYPE entity_status_enum AS ENUM ('created', 'waiting', 'draft_ready', 'awaiting_approval', 'sent', 'followed_up_1', 'followed_up_2', 'escalated', 'closed');
+CREATE TYPE priority_enum AS ENUM ('low', 'medium', 'high', 'urgent');
+CREATE TYPE channel_enum AS ENUM ('email', 'slack', 'unknown');
+CREATE TYPE action_mode_enum AS ENUM ('draft_only', 'approval_required', 'auto_send');
+
+CREATE TABLE follow_ups (
+    id UUID PRIMARY KEY,
+    workspace_id TEXT NOT NULL,
+    created_by_user_id TEXT NOT NULL,
+    source_type source_type_enum NOT NULL,
+    source_ref TEXT NOT NULL,
+    target_contact TEXT NOT NULL,
+    ask_summary TEXT NOT NULL,
+    due_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    status entity_status_enum NOT NULL,
+    priority priority_enum NOT NULL,
+    attempts_count INTEGER NOT NULL DEFAULT 0,
+    last_sent_at TIMESTAMP WITH TIME ZONE,
+    next_follow_up_at TIMESTAMP WITH TIME ZONE,
+    channel channel_enum NOT NULL,
+    mode action_mode_enum NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE follow_up_events (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    follow_up_id UUID NOT NULL REFERENCES follow_ups(id) ON DELETE CASCADE,
+    event_type TEXT NOT NULL,
+    payload JSONB NOT NULL DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+-- Index for scheduler queries
+CREATE INDEX idx_follow_ups_status_due_at ON follow_ups(status, due_at);
+
+-- Phase 2: pgvector Context Setup
+create extension if not exists vector;
+
+create table document_embeddings (
+    id bigserial primary key,
+    source_ref text not null, -- Links back to FollowUpRequest.source_ref
+    content text not null,    -- The text payload (e.g. Email body, Slack snippet)
+    embedding vector(768)     -- 768 dimensions for Gemini API embeddings
+);
+
+-- Cosine similarity search function for the RPC
+create or replace function match_document_embeddings (
+  query_embedding vector(768),
+  match_threshold float,
+  match_count int,
+  p_source_ref text
+)
+returns table (
+  id bigint,
+  content text,
+  similarity float
+)
+language sql stable
+as $$
+  select
+    document_embeddings.id,
+    document_embeddings.content,
+    1 - (document_embeddings.embedding <=> query_embedding) as similarity
+  from document_embeddings
+  where document_embeddings.source_ref = p_source_ref -- Ensure we only look at context for THIS thread
+    and 1 - (document_embeddings.embedding <=> query_embedding) > match_threshold
+  order by similarity desc
+  limit match_count;
+$$;
