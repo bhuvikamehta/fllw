@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import * as api from './api';
 
-function FollowUpCard({ item, onApprove, onClose, onExplain }) {
+function FollowUpCard({ item, onApprove, onClose, onExplain, onReject, onModify }) {
+  const [draftText, setDraftText] = useState(item.current_draft || '');
+  const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    setDraftText(item.current_draft || '');
+  }, [item.current_draft]);
+
   return (
     <div className="card">
       <div className="card-header">
@@ -17,12 +24,35 @@ function FollowUpCard({ item, onApprove, onClose, onExplain }) {
         <p><strong>Due:</strong> {new Date(item.due_at).toLocaleString()}</p>
         <p><strong>Attempts:</strong> {item.attempts_count}</p>
       </div>
-      <div className="actions">
-        {item.status === 'draft_ready' && (
-          <button className="btn" onClick={() => onApprove(item.id)}>Approve Draft</button>
-        )}
-        <button className="btn" style={{ background: 'rgba(255,255,255,0.1)' }} onClick={() => onExplain(item.id)}>Explain</button>
-        <button className="btn btn-danger" onClick={() => onClose(item.id)}>Close</button>
+
+      {item.status === 'draft_ready' && (
+        <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '4px' }}>
+          <h4 style={{ marginBottom: '0.5rem', color: 'var(--primary)' }}>Generated Draft</h4>
+          {isEditing ? (
+            <textarea
+              value={draftText}
+              onChange={e => setDraftText(e.target.value)}
+              style={{ width: '100%', minHeight: '150px', background: 'var(--surface)', color: 'var(--text)', padding: '0.5rem', border: '1px solid var(--border)', fontFamily: 'inherit' }}
+            />
+          ) : (
+            <pre style={{ whiteSpace: 'pre-wrap', fontSize: '13px', lineHeight: '1.5' }}>{item.current_draft || 'No draft text saved.'}</pre>
+          )}
+
+          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', flexWrap: 'wrap' }}>
+            {isEditing ? (
+              <button className="btn" onClick={() => { onModify(item.id, draftText); setIsEditing(false); }}>Save Edits</button>
+            ) : (
+              <button className="btn" style={{ background: 'rgba(255,255,255,0.1)' }} onClick={() => setIsEditing(true)}>Edit Draft</button>
+            )}
+            <button className="btn" style={{ background: 'var(--border)', color: 'white' }} onClick={() => onReject(item.id)}>Reject</button>
+            <button className="btn" style={{ background: 'var(--primary)', flexGrow: 1 }} onClick={() => onApprove(item.id)}>Approve</button>
+          </div>
+        </div>
+      )}
+
+      <div className="actions" style={{ marginTop: '1rem' }}>
+        <button className="btn" style={{ background: 'rgba(255,255,255,0.05)' }} onClick={() => onExplain(item.id)}>Explain</button>
+        <button className="btn btn-danger" onClick={() => onClose(item.id)}>Close Task</button>
       </div>
     </div>
   );
@@ -101,7 +131,19 @@ function ExplainModal({ data, onClose }) {
           {data.timeline.map((evt, idx) => (
             <div key={idx} className="timeline-item">
               <strong>{evt.event_type}</strong> - {new Date(evt.created_at).toLocaleString()}<br />
-              <small>{JSON.stringify(evt.payload)}</small>
+              <div style={{ marginTop: '0.5rem' }}>
+                {evt.payload.reason && (
+                  <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', marginBottom: '0.5rem' }}>{evt.payload.reason}</p>
+                )}
+                {evt.payload.draft && (
+                  <div style={{ background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: '4px', borderLeft: '3px solid var(--primary)', whiteSpace: 'pre-wrap', fontSize: '13px' }}>
+                    {evt.payload.draft}
+                  </div>
+                )}
+                {!evt.payload.reason && !evt.payload.draft && (
+                  <small>{JSON.stringify(evt.payload)}</small>
+                )}
+              </div>
             </div>
           ))}
           {data.timeline.length === 0 && <p>No events yet.</p>}
@@ -154,6 +196,16 @@ function App() {
     loadData();
   };
 
+  const handleReject = async (id) => {
+    await api.rejectFollowUp(id);
+    loadData();
+  };
+
+  const handleModify = async (id, new_text) => {
+    await api.modifyFollowUp(id, new_text);
+    loadData();
+  };
+
   const handleExplain = async (id) => {
     const res = await api.explainFollowUp(id);
     setExplainData(res.data);
@@ -185,6 +237,8 @@ function App() {
                 onApprove={handleApprove}
                 onClose={handleClose}
                 onExplain={handleExplain}
+                onReject={handleReject}
+                onModify={handleModify}
               />
             ))}
             {items.length === 0 && <p style={{ color: 'var(--text-muted)' }}>No {activeTab} follow-ups.</p>}
@@ -212,6 +266,8 @@ function App() {
                   onApprove={handleApprove}
                   onClose={handleClose}
                   onExplain={handleExplain}
+                  onReject={handleReject}
+                  onModify={handleModify}
                 />
               ))}
               {reportData.escalations.length === 0 && <p style={{ color: 'var(--text-muted)' }}>No escalations currently.</p>}

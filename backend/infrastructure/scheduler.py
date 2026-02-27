@@ -61,6 +61,8 @@ class Scheduler:
                         entity.attempts_count += 1
                         
                     new_entity = transition_state(entity, EntityStatus.draft_ready)
+                    new_entity.current_draft = draft_text
+                    
                     self.save_and_log(new_entity, f"Draft generated (Attempt {new_entity.attempts_count})", {"draft": draft_text})
                     continue
             
@@ -68,11 +70,13 @@ class Scheduler:
             if entity.status == EntityStatus.awaiting_approval:
                 from .executors import EmailExecutorGateway, SlackExecutorGateway
                 
+                send_text = entity.current_draft if entity.current_draft else f"Falling back to original ask: {entity.ask_summary}"
+                
                 # Execute send
                 if entity.channel.value == 'slack':
-                    SlackExecutorGateway.send(entity, f"Sending out: {entity.ask_summary}")
+                    SlackExecutorGateway.send(entity, send_text)
                 else:
-                    EmailExecutorGateway.send(entity, f"Sending out: {entity.ask_summary}")
+                    EmailExecutorGateway.send(entity, send_text)
                 
                 # If this is the first sending attempt, go to "sent"
                 if entity.attempts_count == 0:

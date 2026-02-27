@@ -260,6 +260,8 @@ textarea.form-control {
   padding: 2rem;
   width: 90%;
   max-width: 600px;
+  max-height: 85vh;
+  overflow-y: auto;
 }
 
 .timeline {

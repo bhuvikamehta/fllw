@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
+from pydantic import BaseModel
 from typing import List, Dict, Any
 from uuid import UUID
 from datetime import datetime
@@ -53,6 +54,37 @@ def close_followup(id: UUID):
         raise HTTPException(status_code=404, detail="Follow-up not found")
         
     updated_entity = FollowUpApprovalSkill.close_follow_up(entity)
+    return repo.save_follow_up(updated_entity)
+
+class ModifyDraftRequest(BaseModel):
+    new_text: str
+
+@router.post("/{id}/modify", response_model=FollowUpEntity)
+def modify_draft(id: UUID, req: ModifyDraftRequest):
+    """Modifies the draft text for a given follow up draft."""
+    entity = repo.get_follow_up(id)
+    if not entity or entity.status != EntityStatus.draft_ready:
+        raise HTTPException(status_code=400, detail="Follow-up not found or not in draft_ready state")
+        
+    updated_entity = FollowUpApprovalSkill.modify_draft(entity, req.new_text)
+    repo.save_follow_up(updated_entity)
+    repo.log_event(FollowUpEvent(
+        id=UUID(int=0, version=4), # using random uuid inside repo or skip
+        follow_up_id=id,
+        event_type="draft_modified",
+        payload={"reason": "User manually edited draft", "channel": entity.channel.value},
+        created_at=datetime.utcnow()
+    ))
+    return updated_entity
+
+@router.post("/{id}/reject", response_model=FollowUpEntity)
+def reject_draft(id: UUID):
+    """Rejects a draft and resets the scheduler."""
+    entity = repo.get_follow_up(id)
+    if not entity or entity.status != EntityStatus.draft_ready:
+        raise HTTPException(status_code=400, detail="Follow-up not found or not in draft_ready state")
+        
+    updated_entity = FollowUpApprovalSkill.reject_draft(entity)
     return repo.save_follow_up(updated_entity)
 
 @router.get("/pending", response_model=List[FollowUpEntity])

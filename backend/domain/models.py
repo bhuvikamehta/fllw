@@ -64,6 +64,7 @@ class FollowUpEntity(BaseModel):
     attempts_count: int = 0
     last_sent_at: Optional[datetime] = None
     next_follow_up_at: Optional[datetime] = None
+    current_draft: Optional[str] = None
     channel: Channel
     mode: ActionMode
     created_at: datetime
