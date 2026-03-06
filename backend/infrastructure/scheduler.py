@@ -1,6 +1,6 @@
 import time
 import logging
-from ..domain.models import FollowUpEntity, EntityStatus, FollowUpEvent
+from ..domain.models import FollowUpEntity, EntityStatus, FollowUpEvent, ActionMode
 from ..domain.state_machine import transition_state
 from .supabase_repo import SupabaseRepository
 from uuid import uuid4
@@ -63,7 +63,12 @@ class Scheduler:
                     new_entity = transition_state(entity, EntityStatus.draft_ready)
                     new_entity.current_draft = draft_text
                     
-                    self.save_and_log(new_entity, f"Draft generated (Attempt {new_entity.attempts_count})", {"draft": draft_text})
+                    # Mode C (Automated) - immediately push to awaiting_approval
+                    if new_entity.mode == ActionMode.auto_send:
+                        new_entity = transition_state(new_entity, EntityStatus.awaiting_approval)
+                        self.save_and_log(new_entity, f"Draft auto-approved by Mode C policy (Attempt {new_entity.attempts_count})", {"draft": draft_text})
+                    else:
+                        self.save_and_log(new_entity, f"Draft generated (Attempt {new_entity.attempts_count})", {"draft": draft_text})
                     continue
             
             # Execute approved drafts

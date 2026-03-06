@@ -108,6 +108,15 @@ function CreateForm({ onCreated }) {
           <option value="urgent">Urgent</option>
         </select>
       </div>
+      <div className="form-group">
+        <label>Action Mode</label>
+        <select className="form-control" value={formData.action_mode} onChange={e => setFormData({ ...formData, action_mode: e.target.value })}>
+          <option value="approval_required">Mode A: Approval Required (Default)</option>
+          <option value="draft_only">Mode B: Draft Only (Assisted)</option>
+          <option value="auto_send">Mode C: Auto Send (Automated)</option>
+        </select>
+        {formData.action_mode === 'auto_send' && <p style={{ fontSize: '12px', color: 'var(--warning)', marginTop: '4px' }}>Note: Must pass domain/keyword validation or will fallback to Mode A.</p>}
+      </div>
       <button type="submit" className="btn" style={{ width: '100%' }}>Create Follow-up</button>
     </form>
   )
