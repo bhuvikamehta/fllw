@@ -30,9 +30,19 @@ def _credentials_path():
     return None
 
 def get_google_client_config():
+    env_creds = os.getenv("GOOGLE_CREDENTIALS_JSON")
+    if env_creds:
+        try:
+            raw = json.loads(env_creds)
+            config = raw.get('web') or raw.get('installed')
+            if config:
+                return config
+        except json.JSONDecodeError:
+            pass
+
     credentials_path = _credentials_path()
     if not credentials_path:
-        raise Exception("Missing Google OAuth credentials.json.")
+        raise Exception("Missing Google OAuth credentials.json. Please set GOOGLE_CREDENTIALS_JSON environment variable.")
     with open(credentials_path, 'r') as f:
         raw = json.load(f)
     config = raw.get('web') or raw.get('installed')
