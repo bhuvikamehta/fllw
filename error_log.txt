@@ -1,0 +1,19 @@
+Found entities: 9
+--- Entity 0 - ID: df6cbbac-cbe0-402c-9fca-4c06fe9e95c7, Status: EntityStatus.draft_ready ---
+Success, final status: EntityStatus.draft_ready
+--- Entity 1 - ID: 94dbf927-5495-45d5-9b0c-88c53c2d43fa, Status: EntityStatus.draft_ready ---
+Success, final status: EntityStatus.draft_ready
+--- Entity 2 - ID: 1622a806-b345-4d41-840c-89bc8bab6b1a, Status: EntityStatus.draft_ready ---
+Success, final status: EntityStatus.draft_ready
+--- Entity 3 - ID: 0817acd2-8cea-4923-90c8-e19ac1dfb0c5, Status: EntityStatus.draft_ready ---
+Success, final status: EntityStatus.draft_ready
+--- Entity 4 - ID: 2495aa7f-be8d-494a-8e5f-f68c111dfcfa, Status: EntityStatus.draft_ready ---
+Success, final status: EntityStatus.draft_ready
+--- Entity 5 - ID: 0c334700-a14c-497e-895b-fb225253b9c7, Status: EntityStatus.draft_ready ---
+Success, final status: EntityStatus.draft_ready
+--- Entity 6 - ID: d0ba78ee-632a-4b24-84c9-badf60642810, Status: EntityStatus.draft_ready ---
+Success, final status: EntityStatus.draft_ready
+--- Entity 7 - ID: e420acb3-cf67-4d2f-b977-f3ff730dbe79, Status: EntityStatus.draft_ready ---
+Success, final status: EntityStatus.draft_ready
+--- Entity 8 - ID: 64c49bfa-42e5-47ec-91b8-6f15f7a34c5d, Status: EntityStatus.draft_ready ---
+Success, final status: EntityStatus.draft_ready

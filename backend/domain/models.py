@@ -42,8 +42,8 @@ class FollowUpRequest(BaseModel):
     requester_user_id: str
     source_type: SourceType
     source_ref: str
-    target_persons: List[str]
-    ask_summary: str
+    target_persons: List[str] = Field(default_factory=list)
+    ask_summary: str = ""
     due_date_time: str
     urgency: Priority
     action_mode: ActionMode
@@ -78,3 +78,11 @@ class FollowUpEvent(BaseModel):
     event_type: str
     payload: Dict[str, Any]
     created_at: datetime
+
+class IngestMessage(BaseModel):
+    author: str
+    text: str
+
+class IngestThreadRequest(BaseModel):
+    thread_id: str
+    messages: List[IngestMessage]

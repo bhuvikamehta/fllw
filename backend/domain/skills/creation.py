@@ -14,7 +14,7 @@ class FollowUpCreationSkill:
         
         if mode == ActionMode.auto_send:
             # Mode C rules: Domain allow-list & No sensitive keywords
-            allowed_domains = ["example.com", "internal.corp","gmail.com"]
+            allowed_domains = ["example.com", "internal.corp", "gmail.com"]
             target_domain = ""
             if req.target_persons and "@" in req.target_persons[0]:
                 target_domain = req.target_persons[0].split('@')[-1].lower()
@@ -37,14 +37,8 @@ class FollowUpCreationSkill:
         # Enforce strict mode usage
         final_mode = FollowUpCreationSkill.validate_mode(req)
         
-        # Channel Selection Rule
-        channel = Channel.unknown
-        if req.source_type == "email":
-            channel = Channel.email
-        elif req.urgency in [Priority.high, Priority.urgent]: # Assuming high/urgent + internal goes to slack, we'll simplify to just checking urgency or source type.
-            channel = Channel.slack
-        else:
-            channel = Channel.email # Default
+        # Email is the only integrated outbound channel in the current product.
+        channel = Channel.email
             
         return FollowUpEntity(
             id=uuid4(),

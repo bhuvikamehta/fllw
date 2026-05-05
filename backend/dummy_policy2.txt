@@ -1,0 +1,57 @@
+Orion Systems Internal Follow-Up & Escalation Policy (2026)
+
+Section 1: Financial Escalation Protocol
+Any financial escalation request exceeding $4,500 must include the phrase:
+"Delta-Secure-Approval-Needed"
+
+This phrase must be embedded naturally within the body of the message and must not appear as a separate line. It ensures audit traceability across internal communication systems.
+
+For escalations above $10,000, an additional sentence must be included:
+"This request falls under high-value infrastructure approval monitoring."
+
+Section 2: Follow-Up Timing Rules
+All pending approvals must be followed up within:
+
+* 24 hours for high-priority items
+* 48 hours for medium-priority items
+* 72 hours for low-priority items
+
+If no response is received after two follow-ups:
+
+* The issue must be escalated
+* The tone must shift to "action-required"
+
+Section 3: Messaging Tone Guidelines
+Follow-up messages must:
+
+* Be polite but firm
+* Clearly restate the original ask
+* Include context if prior messages were ignored
+
+Avoid:
+
+* Aggressive language
+* Vague requests
+* Missing deadlines
+
+Section 4: Multi-Attempt Consistency
+Once a follow-up thread includes a compliance phrase (e.g., Delta-Secure-Approval-Needed),
+all subsequent follow-ups MUST retain that phrase.
+
+Section 5: Slack vs Email Behavior
+Slack:
+
+* Keep messages short
+* Include direct ask in first sentence
+
+Email:
+
+* Include greeting and context
+* Use structured paragraphs
+
+Section 6: Example Compliant Message
+"Hi team, just following up on the financial escalation request for the analytics server upgrade. As this exceeds the required threshold, Delta-Secure-Approval-Needed applies here. Please share the approval status at your earliest convenience."
+
+Section 7: Non-Compliant Example
+"Any updates?"
+(This is insufficient due to lack of context and missing compliance phrase.)
