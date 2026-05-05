@@ -588,6 +588,15 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     setIsAuthenticated(false);
+    // Clear all user-specific state so the next user starts fresh
+    setMyWorkspaces([]);
+    setAdminWorkspace(null);
+    setWorkspaceMembers([]);
+    setGmailAccount(null);
+    setItems([]);
+    setNavCounts({});
+    setReportData(null);
+    setOrgDocs([]);
   };
 
   const loadGmailStatus = async () => {
@@ -704,18 +713,16 @@ function App() {
   const loadData = async () => {
     if (!isAuthenticated) return;
     try {
-      if (!gmailAccount) {
-        await loadGmailStatus();
-      }
-
-      // Always ensure we have workspace info
-      if (myWorkspaces.length === 0) {
-        const wsRes = await api.getMyWorkspaces();
+      // Always load gmail and workspace on first load (state was cleared on logout)
+      const shouldBootstrap = !gmailAccount || myWorkspaces.length === 0;
+      if (shouldBootstrap) {
+        const [, wsRes] = await Promise.all([
+          loadGmailStatus(),
+          api.getMyWorkspaces(),
+        ]);
         setMyWorkspaces(wsRes.data);
         const adminWs = wsRes.data.find(w => w.user_role === 'admin');
-        if (adminWs) {
-          setAdminWorkspace(adminWs);
-        }
+        setAdminWorkspace(adminWs || null);
       }
 
       await loadNavigationCounts();
