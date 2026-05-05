@@ -93,7 +93,8 @@ def _normalize_frontend_url(frontend_url: str | None) -> str:
 def login_google():
     try:
         supabase_url = os.getenv("SUPABASE_URL", "https://hqxjqbuppbfqenlkryql.supabase.co")
-        url = f"{supabase_url}/auth/v1/authorize?provider=google&redirect_to=http://localhost:3000"
+        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
+        url = f"{supabase_url}/auth/v1/authorize?provider=google&redirect_to={frontend_url}"
         return {"url": url}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
