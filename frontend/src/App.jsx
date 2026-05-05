@@ -761,7 +761,7 @@ function App() {
   useEffect(() => {
     loadData();
     // Auto-refresh interval (for scheduler changes)
-    const interval = setInterval(loadData, 5000);
+    const interval = setInterval(loadData, 15000);
     return () => clearInterval(interval);
   }, [activeTab, isAuthenticated]);
 
